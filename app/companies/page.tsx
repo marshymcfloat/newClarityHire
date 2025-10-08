@@ -12,13 +12,13 @@ import React from "react";
 const page = () => {
   return (
     <main className="h-screen flex justify-center items-center">
-      <Card className="lg:min-w-[80%] lg:min-h-[80vh]">
+      <Card className="lg:min-w-[80%] lg:min-h-[80vh] w-[95%] h-[95%]">
         <CardHeader>
           <CardTitle className="text-2xl capitalize">
             Find opportunies on these companies
           </CardTitle>
         </CardHeader>
-        <CardContent className="lg:grid lg:grid-cols-4">
+        <CardContent className="grid lg:grid-cols-4 grid-cols-1  gap-4">
           {dummyCompanies.map((company) => (
             <CompanyCard
               id={company.id}
