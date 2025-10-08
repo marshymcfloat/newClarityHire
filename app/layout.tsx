@@ -25,6 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
+        style={{
+          background:
+            "radial-gradient(125% 125% at 50% 90%, #fff 40%, #7c3aed 100%)",
+        }}
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
