@@ -1,4 +1,5 @@
 import { AppSidebar } from "@/components/AppSidebar";
+import { Card } from "@/components/ui/card";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import React from "react";
 
@@ -7,10 +8,9 @@ const CompanyLayout = ({ children }: { children: React.ReactNode }) => {
     <>
       <SidebarProvider>
         <AppSidebar />
-        <main>
-          <SidebarTrigger />
-
-          {children}
+        <main className="overflow-hidden w-screen  p-2  px-6">
+          <SidebarTrigger className="mb-2" />
+          <Card className="h-[95%] lg:h-[95%] lg:w-[98vw] shadow-2xl"></Card>
         </main>
       </SidebarProvider>
     </>
