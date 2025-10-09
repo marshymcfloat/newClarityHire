@@ -1,7 +1,9 @@
 import JobCard from "@/components/available-jobs/JobCard";
 import { dummyJobs } from "@/constants";
-import { DummyJobsType } from "@/constants";
-const page = async ({ params }: { params: { companySlug: string } }) => {
+
+type Params = Promise<{ companySlug: string }>;
+
+const page = async ({ params }: { params: Params }) => {
   const { companySlug } = await params;
 
   return (
