@@ -1,0 +1,192 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  id_token          String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  session_state     String?
+  User              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Application {
+  id                String              @id
+  userId            String
+  jobId             String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime
+  status            ApplicationStatus   @default(SUBMITTED)
+  resumeId          String
+  Job               Job                 @relation(fields: [jobId], references: [id])
+  Resume            Resume              @relation(fields: [resumeId], references: [id])
+  User              User                @relation(fields: [userId], references: [id])
+  ApplicationAnswer ApplicationAnswer[]
+
+  @@unique([userId, jobId])
+}
+
+model ApplicationAnswer {
+  id            String      @id
+  answer        String[]
+  applicationId String
+  questionId    String
+  Application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  Question      Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, questionId])
+}
+
+model Company {
+  id          String     @id
+  name        String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime
+  coverImage  String?
+  description String
+  image       String?
+  location    String
+  slug        String     @unique
+  websiteUrl  String?
+  Job         Job[]
+  Question    Question[]
+  User        User[]
+}
+
+model Job {
+  id               String          @id
+  title            String
+  description      String?
+  companyId        String
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime
+  department       String?
+  experienceLevel  ExperienceLevel
+  isActive         Boolean         @default(true)
+  jobType          JobType
+  location         String
+  salaryMax        Int?
+  salaryMin        Int?
+  benefits         String[]
+  qualifications   String[]
+  responsibilities String[]
+  skills           String[]
+  workArrangement  WorkArrangement @default(ON_SITE)
+  workSchedule     String?
+  Application      Application[]
+  Company          Company         @relation(fields: [companyId], references: [id])
+  QuestionOnJob    QuestionOnJob[]
+}
+
+model Question {
+  id                String              @id
+  question          String
+  companyId         String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime
+  type              QuestionTypeEnum
+  options           String[]
+  ApplicationAnswer ApplicationAnswer[]
+  Company           Company             @relation(fields: [companyId], references: [id])
+  QuestionOnJob     QuestionOnJob[]
+}
+
+model QuestionOnJob {
+  jobId      String
+  questionId String
+  order      Int      @default(0)
+  isRequired Boolean  @default(true)
+  Job        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  Question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@id([jobId, questionId])
+}
+
+model Resume {
+  id          String        @id
+  name        String
+  userId      String
+  url         String
+  createdAt   DateTime      @default(now())
+  deletedAt   DateTime?
+  Application Application[]
+  User        User          @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id          String         @id @default(cuid())
+  email       String         @unique
+  name        String?
+  password    String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime      @updatedAt
+  username    String?        @unique
+  image       String?
+  companyId   String?
+  role        UserRoleEnum[] @default([APPLICANT])
+  Account     Account[]
+  Application Application[]
+  Resume      Resume[]
+  Company     Company?       @relation(fields: [companyId], references: [id])
+}
+
+enum ApplicationStatus {
+  SUBMITTED
+  IN_REVIEW
+  INTERVIEWING
+  OFFERED
+  REJECTED
+  WITHDRAWN
+  HIRED
+}
+
+enum ExperienceLevel {
+  INTERNSHIP
+  ENTRY_LEVEL
+  ASSOCIATE
+  MID_LEVEL
+  SENIOR
+  STAFF
+  PRINCIPAL
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+}
+
+enum QuestionTypeEnum {
+  TEXT
+  MULTIPLE_CHOICE
+  NUMBER
+  CHECKBOX
+  TRUE_OR_FALSE
+}
+
+enum UserRoleEnum {
+  APPLICANT
+  RECRUITER
+}
+
+enum WorkArrangement {
+  ON_SITE
+  HYBRID
+  REMOTE
+}

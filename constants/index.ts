@@ -12,7 +12,31 @@ export const dummyCompanies = [
   },
 ];
 
-export const dummyJobs = [
+export type QuestionType = {
+  id: number;
+  question: string;
+  options?: string[];
+  type: string;
+};
+
+export type ExperienceLevelEnum = "ENTRY" | "MID_LEVEL" | "SENIOR" | "MANAGER";
+export type JobTypeEnum = "FULLTIME" | "PARTTIME" | "CONTRACTUAL";
+
+export type DummyJobsType = {
+  id: number;
+  title: string;
+  summary: string;
+  qualification: string[];
+  responsibilities: string[];
+  minSalary?: number;
+  maxSalary?: number;
+  questions: QuestionType[];
+  location: string;
+  experienceLevel: ExperienceLevelEnum;
+  jobType: JobTypeEnum;
+};
+
+export const dummyJobs: DummyJobsType[] = [
   {
     id: jobId++,
     title: "Junior Web Developer",
@@ -63,5 +87,8 @@ export const dummyJobs = [
         options: ["ReactJS", "NEXTJS", "REDUX"],
       },
     ],
+    location: "Makati City, Philippines",
+    experienceLevel: "ENTRY",
+    jobType: "FULLTIME",
   },
 ];
