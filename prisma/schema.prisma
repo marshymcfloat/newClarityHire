@@ -26,11 +26,11 @@ model Account {
 }
 
 model Application {
-  id                String              @id
+  id                String              @id   @default(cuid())
   userId            String
   jobId             String
   createdAt         DateTime            @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime            @updatedAt
   status            ApplicationStatus   @default(SUBMITTED)
   resumeId          String
   Job               Job                 @relation(fields: [jobId], references: [id])
@@ -42,7 +42,7 @@ model Application {
 }
 
 model ApplicationAnswer {
-  id            String      @id
+  id            String      @id     @default(cuid())
   answer        String[]
   applicationId String
   questionId    String
@@ -53,10 +53,10 @@ model ApplicationAnswer {
 }
 
 model Company {
-  id          String     @id
+  id          String     @id    @default(cuid())
   name        String
   createdAt   DateTime   @default(now())
-  updatedAt   DateTime
+  updatedAt   DateTime   @updatedAt
   coverImage  String?
   description String
   image       String?
@@ -69,13 +69,13 @@ model Company {
 }
 
 model Job {
-  id               String          @id
+  id               String          @id    @default(cuid())
   title            String
-  description      String?
+  summary      String
   companyId        String
   createdAt        DateTime        @default(now())
-  updatedAt        DateTime
-  department       String?
+  updatedAt        DateTime         @updatedAt
+  department       String
   experienceLevel  ExperienceLevel
   isActive         Boolean         @default(true)
   jobType          JobType
@@ -94,11 +94,11 @@ model Job {
 }
 
 model Question {
-  id                String              @id
+  id                String              @id   @default(cuid())
   question          String
   companyId         String
   createdAt         DateTime            @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime          @updatedAt
   type              QuestionTypeEnum
   options           String[]
   ApplicationAnswer ApplicationAnswer[]
@@ -118,7 +118,7 @@ model QuestionOnJob {
 }
 
 model Resume {
-  id          String        @id
+  id          String        @id   @default(cuid())
   name        String
   userId      String
   url         String

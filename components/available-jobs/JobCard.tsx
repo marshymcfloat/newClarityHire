@@ -7,16 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { DummyJobsType } from "@/constants";
 import Link from "next/link";
+import { Job } from "@prisma/client";
 
-const JobCard = ({
-  job,
-  companySlug,
-}: {
-  job: DummyJobsType;
-  companySlug: string;
-}) => {
+const JobCard = ({ job, companySlug }: { job: Job; companySlug: string }) => {
   return (
     <Link href={`/${companySlug}/${job.id}`}>
       <Card className="w-fit lg:max-w-[400px] lg:min-w-[400px] hover:shadow-md transition-all duration-200">

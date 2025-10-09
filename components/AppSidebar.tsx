@@ -1,4 +1,6 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
+"use client";
+
+import { Briefcase, ClipboardList } from "lucide-react";
 
 import {
   Sidebar,
@@ -12,36 +14,25 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import UserButton from "./App Sidebar/UserButton";
-
-const items = [
-  {
-    title: "Home",
-    url: "#",
-    icon: Home,
-  },
-  {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
-  },
-  {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
-  },
-  {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
-  },
-];
+import { useParams } from "next/navigation";
 
 export function AppSidebar() {
+  const { companySlug } = useParams();
+
+  console.log(companySlug);
+
+  const items = [
+    {
+      title: "Available jobs",
+      url: `/${companySlug}/available-jobs`,
+      icon: Briefcase,
+    },
+    {
+      title: "Job Applications",
+      url: `/${companySlug}/job-applications`,
+      icon: ClipboardList,
+    },
+  ];
   return (
     <Sidebar>
       <SidebarContent>
