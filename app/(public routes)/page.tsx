@@ -5,7 +5,7 @@ const page = () => {
     <main className="overflow-y-auto">
       <div className="h-screen flex justify-center items-center">
         <div className="">
-          <h1 className="font-bold text-[120px]  tracking-widest">
+          <h1 className="font-bold lg:text-[120px] text-[54px] text-center  tracking-widest">
             ClarityHire.
           </h1>
           <p className="text-center ">
