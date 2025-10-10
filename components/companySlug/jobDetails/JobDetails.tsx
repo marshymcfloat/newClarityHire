@@ -25,6 +25,7 @@ import {
   JOB_TYPE_MAP,
   WORK_ARRANGEMENT_MAP,
 } from "@/constants";
+import { formatSalary } from "@/lib/utils";
 
 type JobWithCompany = Job & { Company: Company };
 
@@ -49,15 +50,6 @@ const JobMiniDetails = ({
     </Badge>
   </div>
 );
-
-const formatSalary = (min?: number | null, max?: number | null) => {
-  if (!min && !max) return "Salary not disclosed";
-  const format = (n: number) => `$${(n / 1000).toFixed(0)}k`;
-  if (min && max) return `${format(min)} - ${format(max)}`;
-  if (min) return `From ${format(min)}`;
-  if (max) return `Up to ${format(max)}`;
-  return "Salary not disclosed";
-};
 
 const JobDetails = ({ jobDetails }: { jobDetails: JobWithCompany }) => {
   const {
@@ -113,7 +105,7 @@ const JobDetails = ({ jobDetails }: { jobDetails: JobWithCompany }) => {
                 {formatSalary(salaryMin, salaryMax)}
                 <span className="font-normal text-muted-foreground">
                   {" "}
-                  / year
+                  / month
                 </span>
               </p>
             </div>

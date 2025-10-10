@@ -22,3 +22,14 @@ export const formatPostedDate = (date: Date): string => {
 
   return "Just now";
 };
+
+export const formatSalary = (min?: number | null, max?: number | null) => {
+  if (!min && !max) return "Salary not disclosed";
+
+  const format = (n: number) => `₱${(n / 1000).toFixed(0)}k`;
+
+  if (min && max) return `${format(min)} - ${format(max)}`;
+  if (min) return `From ${format(min)}`;
+  if (max) return `Up to ${format(max)}`;
+  return "Salary not disclosed";
+};
