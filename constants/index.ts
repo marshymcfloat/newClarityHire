@@ -1,3 +1,12 @@
+import {
+  ApplicationStatus,
+  ExperienceLevel,
+  JobType,
+  QuestionTypeEnum,
+  UserRoleEnum,
+  WorkArrangement,
+} from "@prisma/client";
+
 let companyId = 1;
 let jobId = 1000;
 let questionId = 2000;
@@ -92,3 +101,69 @@ export const dummyJobs: DummyJobsType[] = [
     jobType: "FULLTIME",
   },
 ];
+
+// lib/constants.ts (or a similar location)
+
+/**
+ * Maps ApplicationStatus enum to human-readable strings.
+ */
+export const APPLICATION_STATUS_MAP: Record<ApplicationStatus, string> = {
+  [ApplicationStatus.SUBMITTED]: "Submitted",
+  [ApplicationStatus.IN_REVIEW]: "In Review",
+  [ApplicationStatus.INTERVIEWING]: "Interviewing",
+  [ApplicationStatus.OFFERED]: "Offer Extended",
+  [ApplicationStatus.REJECTED]: "Rejected",
+  [ApplicationStatus.WITHDRAWN]: "Withdrawn",
+  [ApplicationStatus.HIRED]: "Hired",
+};
+
+/**
+ * Maps ExperienceLevel enum to human-readable strings.
+ */
+export const EXPERIENCE_LEVEL_MAP: Record<ExperienceLevel, string> = {
+  [ExperienceLevel.INTERNSHIP]: "Internship",
+  [ExperienceLevel.ENTRY_LEVEL]: "Entry Level",
+  [ExperienceLevel.ASSOCIATE]: "Associate",
+  [ExperienceLevel.MID_LEVEL]: "Mid-level / Intermediate",
+  [ExperienceLevel.SENIOR]: "Senior Level",
+  [ExperienceLevel.STAFF]: "Staff Level",
+  [ExperienceLevel.PRINCIPAL]: "Principal Level",
+};
+
+/**
+ * Maps JobType enum to human-readable strings.
+ */
+export const JOB_TYPE_MAP: Record<JobType, string> = {
+  [JobType.FULL_TIME]: "Full-time",
+  [JobType.PART_TIME]: "Part-time",
+  [JobType.CONTRACT]: "Contract",
+  [JobType.INTERNSHIP]: "Internship",
+};
+
+/**
+ * Maps QuestionTypeEnum to human-readable strings.
+ */
+export const QUESTION_TYPE_MAP: Record<QuestionTypeEnum, string> = {
+  [QuestionTypeEnum.TEXT]: "Text Input",
+  [QuestionTypeEnum.MULTIPLE_CHOICE]: "Multiple Choice",
+  [QuestionTypeEnum.NUMBER]: "Number Input",
+  [QuestionTypeEnum.CHECKBOX]: "Checkbox (Select multiple)",
+  [QuestionTypeEnum.TRUE_OR_FALSE]: "True / False",
+};
+
+/**
+ * Maps UserRoleEnum to human-readable strings.
+ */
+export const USER_ROLE_MAP: Record<UserRoleEnum, string> = {
+  [UserRoleEnum.APPLICANT]: "Applicant",
+  [UserRoleEnum.RECRUITER]: "Recruiter",
+};
+
+/**
+ * Maps WorkArrangement enum to human-readable strings.
+ */
+export const WORK_ARRANGEMENT_MAP: Record<WorkArrangement, string> = {
+  [WorkArrangement.ON_SITE]: "On-site",
+  [WorkArrangement.HYBRID]: "Hybrid",
+  [WorkArrangement.REMOTE]: "Remote",
+};

@@ -3,7 +3,7 @@ import { Skeleton } from "../ui/skeleton";
 
 const AvailableJobsListSkeleton = () => {
   return (
-    <div className="flex-1 grid-cols-4 grid ">
+    <div className="flex-1 grid-cols-4 grid py-8">
       <Skeleton className="w-[400px] h-[250px]" />
       <Skeleton className="w-[400px] h-[250px]" />
       <Skeleton className="w-[400px] h-[250px]" />
