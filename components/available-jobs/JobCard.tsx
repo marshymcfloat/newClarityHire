@@ -1,30 +1,57 @@
-import { Building } from "lucide-react";
-import { Badge } from "../ui/badge";
+import { Job } from "@prisma/client";
+import Link from "next/link";
+import { MapPin, TrendingUp, Clock } from "lucide-react";
+
+import { EXPERIENCE_LEVEL_MAP, JOB_TYPE_MAP } from "@/constants";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import Link from "next/link";
-import { Job } from "@prisma/client";
+import { Badge } from "../ui/badge";
+import { formatPostedDate } from "@/lib/utils";
 
-const JobCard = ({ job, companySlug }: { job: Job; companySlug: string }) => {
+interface JobCardProps {
+  job: Job;
+  companySlug: string;
+}
+
+const JobCard = ({ job, companySlug }: JobCardProps) => {
   return (
-    <Link href={`/${companySlug}/${job.id}`}>
-      <Card className="w-fit lg:max-w-[400px] lg:min-w-[400px] hover:shadow-md transition-all duration-200">
-        <CardHeader>
-          <CardTitle className="text-2xl ">{job.title}</CardTitle>
-          <div className="flex gap-2">
-            <Badge className="">{job.jobType}</Badge>
-            <Badge className="">{job.experienceLevel}</Badge>
-            <Badge className="">{job.location}</Badge>
+    <Link href={`/${companySlug}/${job.id}`} className="block h-full">
+      <Card className="flex h-full flex-col transition-all duration-200 hover:border-primary hover:shadow-lg">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-xl font-semibold leading-tight">
+            {job.title}
+          </CardTitle>
+          <div className="flex flex-wrap items-center gap-2 pt-2">
+            <Badge variant="secondary" className="flex items-center gap-1.5">
+              <MapPin size={14} />
+              {job.location}
+            </Badge>
+            <Badge variant="secondary" className="flex items-center gap-1.5">
+              <TrendingUp size={14} />
+              {EXPERIENCE_LEVEL_MAP[job.experienceLevel]}
+            </Badge>
           </div>
         </CardHeader>
-        <CardContent>
-          <CardDescription className="text-wrap">{job.summary}</CardDescription>
+        <CardContent className="flex-grow">
+          <CardDescription className="line-clamp-3">
+            {job.summary}
+          </CardDescription>
         </CardContent>
+        <CardFooter className="pt-4 text-xs text-muted-foreground">
+          <div className="flex w-full items-center justify-between">
+            <span>{JOB_TYPE_MAP[job.jobType]}</span>
+            <div className="flex items-center gap-1">
+              <Clock size={12} />
+              <span>Posted {formatPostedDate(job.createdAt)}</span>
+            </div>
+          </div>
+        </CardFooter>
       </Card>
     </Link>
   );
