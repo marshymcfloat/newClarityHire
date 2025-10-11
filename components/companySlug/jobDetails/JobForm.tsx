@@ -20,7 +20,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import QuestionRenderer from "./QuestionRenderer";
 import { Separator } from "@/components/ui/separator";
-import { createApplicationSchema } from "@/lib/zod schemas/auth/jobApplicationSchemas";
+
 import {
   Select,
   SelectContent,
@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { UploadCloud } from "lucide-react";
+import { createApplicationSchema } from "@/lib/zod schemas/auth/jobApplicationSchemas";
 
 type QuestionOnJobWithQuestion = QuestionOnJob & {
   Question: Question;
@@ -61,12 +62,12 @@ const JobForm = ({ questions, resumes }: JobFormProps) => {
       answers: questions.reduce((acc, q) => {
         acc[q.Question.id] = q.Question.type === "CHECKBOX" ? [] : "";
         return acc;
-      }, {} as Record<string, any>),
+      }, {} as Record<string, string | string[]>),
     },
   });
 
   const onSubmit = (values: ApplicationFormValues) => {
-    console.log(values);
+    console.log("Form Submitted:", values);
   };
 
   return (
