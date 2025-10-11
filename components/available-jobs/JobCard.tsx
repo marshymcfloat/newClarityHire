@@ -28,7 +28,7 @@ const JobCard = ({ job, companySlug }: JobCardProps) => {
             {job.title}
           </CardTitle>
           <div className="flex flex-wrap items-center gap-2 pt-2">
-            <Badge variant="secondary" className="flex items-center gap-1.5">
+            <Badge variant="secondary" className="flex i  tems-center gap-1.5">
               <MapPin size={14} />
               {job.location}
             </Badge>

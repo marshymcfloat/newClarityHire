@@ -33,3 +33,13 @@ export const formatSalary = (min?: number | null, max?: number | null) => {
   if (max) return `Up to ${format(max)}`;
   return "Salary not disclosed";
 };
+
+export const getInitials = (name: string = ""): string => {
+  if (!name) return "";
+  const words = name.trim().split(" ").filter(Boolean);
+  if (words.length === 0) return "";
+  if (words.length === 1) {
+    return words[0].charAt(0).toUpperCase();
+  }
+  return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+};

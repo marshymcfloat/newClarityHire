@@ -5,27 +5,19 @@ import {
   JobType,
   WorkArrangement,
 } from "@prisma/client";
-import {
-  Briefcase,
-  Building2,
-  Clock,
-  FileText,
-  MapPin,
-  TrendingUp,
-} from "lucide-react";
+import { Building2, FileText, TrendingUp } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 
 import {
   EXPERIENCE_LEVEL_MAP,
   JOB_TYPE_MAP,
   WORK_ARRANGEMENT_MAP,
 } from "@/constants";
-import { formatSalary } from "@/lib/utils";
+import { formatSalary, getInitials } from "@/lib/utils";
 
 type JobWithCompany = Job & { Company: Company };
 
@@ -55,7 +47,6 @@ const JobDetails = ({ jobDetails }: { jobDetails: JobWithCompany }) => {
   const {
     Company,
     benefits,
-    department,
     experienceLevel,
     jobType,
     location,
@@ -70,7 +61,7 @@ const JobDetails = ({ jobDetails }: { jobDetails: JobWithCompany }) => {
   } = jobDetails;
 
   return (
-    <div className="container mx-auto space-y-8  overflow-y-auto ">
+    <div className="container mx-auto space-y-8 overflow-y-auto">
       <Card>
         <CardContent className="p-6">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -80,7 +71,9 @@ const JobDetails = ({ jobDetails }: { jobDetails: JobWithCompany }) => {
                   src={Company.image || undefined}
                   alt={`${Company.name} logo`}
                 />
-                <AvatarFallback>{Company.name.charAt(0)}</AvatarFallback>
+                <AvatarFallback className="text-xl font-bold">
+                  {getInitials(Company.name)}
+                </AvatarFallback>
               </Avatar>
               <div className="flex flex-col gap-1">
                 <h1 className="text-2xl font-bold">{title}</h1>
@@ -114,7 +107,7 @@ const JobDetails = ({ jobDetails }: { jobDetails: JobWithCompany }) => {
       </Card>
 
       <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
-        <div className="md:col-span-2 space-y-8">
+        <div className="space-y-8 md:col-span-2">
           <div>
             <h2 className="mb-4 text-xl font-semibold">Job Summary</h2>
             <p className="text-muted-foreground">{summary}</p>
@@ -137,7 +130,7 @@ const JobDetails = ({ jobDetails }: { jobDetails: JobWithCompany }) => {
           </div>
         </div>
 
-        <div className="md:col-span-1 space-y-6">
+        <div className="space-y-6 md:col-span-1">
           {skills.length > 0 && (
             <div>
               <h3 className="mb-3 text-lg font-semibold">Skills Required</h3>

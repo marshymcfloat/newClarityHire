@@ -1,7 +1,9 @@
+// components/CompanyCard.tsx
+
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { MapPin } from "lucide-react";
+
+import { getInitials } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -10,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 
 type CompanyCardProps = {
@@ -27,18 +30,15 @@ const CompanyCard = ({
   image,
   location,
 }: CompanyCardProps) => {
-  const companyLogo = image || "https://via.placeholder.com/150";
-
   return (
-    <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1">
+    <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl">
       <CardHeader className="flex flex-row items-start gap-4 p-4">
-        <Image
-          src={companyLogo}
-          alt={`${name} logo`}
-          width={64}
-          height={64}
-          className="object-contain border rounded-lg aspect-square"
-        />
+        <Avatar className="h-16 w-16 rounded-lg border">
+          <AvatarImage src={image || undefined} alt={`${name} logo`} />
+          <AvatarFallback className="text-xl font-bold">
+            {getInitials(name)}
+          </AvatarFallback>
+        </Avatar>
         <div className="flex-grow">
           <Link href={`/${slug}/available-jobs`} className="hover:underline">
             <CardTitle className="text-xl font-bold">{name}</CardTitle>
@@ -49,7 +49,7 @@ const CompanyCard = ({
         </div>
       </CardHeader>
       <CardContent className="flex-grow p-4 pt-0">
-        <p className="text-sm text-muted-foreground line-clamp-3">
+        <p className="line-clamp-3 text-sm text-muted-foreground">
           {description}
         </p>
       </CardContent>
