@@ -70,7 +70,7 @@ const JobDetails = ({ jobDetails }: { jobDetails: JobWithCompany }) => {
   } = jobDetails;
 
   return (
-    <div className="container mx-auto space-y-8 ">
+    <div className="container mx-auto space-y-8  overflow-y-auto ">
       <Card>
         <CardContent className="p-6">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">

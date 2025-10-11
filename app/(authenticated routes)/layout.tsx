@@ -11,9 +11,9 @@ const CompanyLayout = ({ children }: { children: React.ReactNode }) => {
       <NextSessionProvider>
         <SidebarProvider>
           <AppSidebar />
-          <main className="overflow-hidden w-screen  p-2  px-6  ">
+          <main className="overflow-hidden w-screen  p-2  lg:px-6 ">
             <SidebarTrigger className="mb-2" />
-            <Card className="h-[95%] lg:h-[95%] lg:w-[98vw] shadow-2xl p-2">
+            <Card className="h-[95%] lg:h-[90%] lg:w-[98vw] shadow-2xl p-2">
               {children}
             </Card>
             <Toaster />

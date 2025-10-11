@@ -1,37 +1,24 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import CompanyCard from "@/components/ui/companies/CompanyCard";
-import { dummyCompanies } from "@/constants";
-import React from "react";
+import CompaniesDataContainer from "@/components/companies/CompaniesDataContainer";
+import CompaniesGridSkeleton from "@/components/companies/CompaniesGridSkeleton";
+import React, { Suspense } from "react";
 
-const page = () => {
+const CompaniesPage = () => {
   return (
-    <main className="h-screen flex justify-center items-center">
-      <Card className="lg:min-w-[80%] lg:min-h-[80vh] w-[95%] h-[95%]">
-        <CardHeader>
-          <CardTitle className="text-2xl capitalize">
-            Find opportunies on these companies
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid lg:grid-cols-4 grid-cols-1  gap-4">
-          {dummyCompanies.map((company) => (
-            <CompanyCard
-              id={company.id}
-              name={company.name}
-              key={company.id}
-              description={company.description}
-              slug={company.slug}
-            />
-          ))}
-        </CardContent>
-      </Card>
+    <main className="container mx-auto px-4 py-8 sm:px-6 lg:px-8 h-screen">
+      <div className="mb-8 space-y-2 text-center ">
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          Explore Opportunities
+        </h1>
+        <p className="text-lg text-muted-foreground">
+          Discover innovative companies and find your next great role.
+        </p>
+      </div>
+
+      <Suspense fallback={<CompaniesGridSkeleton />}>
+        <CompaniesDataContainer />
+      </Suspense>
     </main>
   );
 };
 
-export default page;
+export default CompaniesPage;
