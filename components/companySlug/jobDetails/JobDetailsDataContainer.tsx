@@ -11,7 +11,7 @@ const JobDetailsDataContainer = async ({ id }: { id: string }) => {
     return <h1>No details found for this job</h1>;
   }
 
-  return <JobDetails jobDetails={jobDetails} />;
+  return <JobDetails jobDetails={jobDetails} jobId={id} />;
 };
 
 export default JobDetailsDataContainer;

@@ -9,7 +9,6 @@ import { Building2, FileText, TrendingUp } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 import {
@@ -18,6 +17,7 @@ import {
   WORK_ARRANGEMENT_MAP,
 } from "@/constants";
 import { formatSalary, getInitials } from "@/lib/utils";
+import ApplyJobSheet from "./ApplyJobSheet";
 
 type JobWithCompany = Job & { Company: Company };
 
@@ -43,7 +43,13 @@ const JobMiniDetails = ({
   </div>
 );
 
-const JobDetails = ({ jobDetails }: { jobDetails: JobWithCompany }) => {
+const JobDetails = ({
+  jobDetails,
+  jobId,
+}: {
+  jobDetails: JobWithCompany;
+  jobId: string;
+}) => {
   const {
     Company,
     benefits,
@@ -91,9 +97,11 @@ const JobDetails = ({ jobDetails }: { jobDetails: JobWithCompany }) => {
             </div>
 
             <div className="flex flex-col items-start gap-3 md:items-end">
-              <Button size="lg" className="w-full md:w-auto">
-                Apply Now
-              </Button>
+              <ApplyJobSheet
+                jobTitle={jobDetails.title}
+                jobSummary={jobDetails.summary}
+                jobId={jobId}
+              />
               <p className="font-semibold text-slate-800">
                 {formatSalary(salaryMin, salaryMax)}
                 <span className="font-normal text-muted-foreground">
