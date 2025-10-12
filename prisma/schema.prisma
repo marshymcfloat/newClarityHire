@@ -61,7 +61,6 @@ model Company {
 
   plan        String   @default("free")
   
-  // --- FIX APPLIED ---
   ownerId     String   @unique
   owner       User     @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
 

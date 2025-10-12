@@ -3,7 +3,6 @@ import {
   ExperienceLevel,
   JobType,
   QuestionTypeEnum,
-  UserRoleEnum,
   WorkArrangement,
 } from "@prisma/client";
 
@@ -154,10 +153,6 @@ export const QUESTION_TYPE_MAP: Record<QuestionTypeEnum, string> = {
 /**
  * Maps UserRoleEnum to human-readable strings.
  */
-export const USER_ROLE_MAP: Record<UserRoleEnum, string> = {
-  [UserRoleEnum.APPLICANT]: "Applicant",
-  [UserRoleEnum.RECRUITER]: "Recruiter",
-};
 
 /**
  * Maps WorkArrangement enum to human-readable strings.
