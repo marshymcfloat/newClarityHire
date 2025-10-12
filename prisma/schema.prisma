@@ -7,6 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -20,64 +22,80 @@ model Account {
   token_type        String?
   scope             String?
   session_state     String?
-  User              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
 
-model Application {
-  id                String              @id   @default(cuid())
-  userId            String
-  jobId             String
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  status            ApplicationStatus   @default(SUBMITTED)
-  resumeId          String
-  Job               Job                 @relation(fields: [jobId], references: [id])
-  Resume            Resume              @relation(fields: [resumeId], references: [id])
-  User              User                @relation(fields: [userId], references: [id])
-  ApplicationAnswer ApplicationAnswer[]
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  username      String?   @unique
+  image         String?
+  
+  hashedPassword String?
+  
+  emailVerified DateTime? 
 
-  @@unique([userId, jobId])
-}
-
-model ApplicationAnswer {
-  id            String      @id     @default(cuid())
-  answer        String[]
-  applicationId String
-  questionId    String
-  Application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  Question      Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
-
-  @@unique([applicationId, questionId])
+  Account       Account[]
+  Application   Application[]
+  Resume        Resume[]
+  memberships   CompanyMember[]
+  ownedCompany  Company?      @relation("CompanyOwner")
 }
 
 model Company {
-  id          String     @id    @default(cuid())
+  id          String   @id @default(cuid())
   name        String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   coverImage  String?
   description String
   image       String?
   location    String
-  slug        String     @unique
+  slug        String   @unique
   websiteUrl  String?
-  Job         Job[]
-  Question    Question[]
-  User        User[]
+
+  plan        String   @default("free")
+  
+  // --- FIX APPLIED ---
+  ownerId     String   @unique
+  owner       User     @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  stripeCustomerId String? @unique
+
+  Job      Job[]
+  Question Question[]
+  members  CompanyMember[]
+}
+
+model CompanyMember {
+  id        String   @id @default(cuid())
+  userId    String
+  companyId String
+  role      TeamRole @default(MEMBER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, companyId])
 }
 
 model Job {
-  id               String          @id    @default(cuid())
+  id               String          @id @default(cuid())
   title            String
-  summary      String
+  summary          String
   companyId        String
   createdAt        DateTime        @default(now())
-  updatedAt        DateTime         @updatedAt
+  updatedAt        DateTime        @updatedAt
   department       String
   experienceLevel  ExperienceLevel
-  isActive         Boolean         @default(true)
+  status           JobStatus       @default(DRAFT)
   jobType          JobType
   location         String
   salaryMax        Int?
@@ -88,22 +106,65 @@ model Job {
   skills           String[]
   workArrangement  WorkArrangement @default(ON_SITE)
   workSchedule     String?
-  Application      Application[]
-  Company          Company         @relation(fields: [companyId], references: [id])
-  QuestionOnJob    QuestionOnJob[]
+
+  Application   Application[]
+  Company       Company         @relation(fields: [companyId], references: [id])
+  QuestionOnJob QuestionOnJob[]
+}
+
+model Application {
+  id                String              @id @default(cuid())
+  userId            String
+  jobId             String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  status            ApplicationStatus   @default(SUBMITTED)
+  resumeId          String
+
+  Job               Job                 @relation(fields: [jobId], references: [id])
+  Resume            Resume              @relation(fields: [resumeId], references: [id])
+  User              User                @relation(fields: [userId], references: [id])
+  ApplicationAnswer ApplicationAnswer[]
+
+  @@unique([userId, jobId])
+}
+
+model Resume {
+  id          String        @id @default(cuid())
+  name        String
+  userId      String
+  url         String
+  createdAt   DateTime      @default(now())
+  deletedAt   DateTime?
+
+  Application Application[]
+  User        User          @relation(fields: [userId], references: [id])
 }
 
 model Question {
-  id                String              @id   @default(cuid())
-  question          String
-  companyId         String
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime          @updatedAt
-  type              QuestionTypeEnum
-  options           String[]
+  id        String           @id @default(cuid())
+  question  String
+  companyId String
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  type      QuestionTypeEnum
+  options   String[]
+
   ApplicationAnswer ApplicationAnswer[]
   Company           Company             @relation(fields: [companyId], references: [id])
   QuestionOnJob     QuestionOnJob[]
+}
+
+model ApplicationAnswer {
+  id            String      @id @default(cuid())
+  answer        String[]
+  applicationId String
+  questionId    String
+
+  Application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  Question      Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, questionId])
 }
 
 model QuestionOnJob {
@@ -111,38 +172,27 @@ model QuestionOnJob {
   questionId String
   order      Int      @default(0)
   isRequired Boolean  @default(true)
+
   Job        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
   Question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@id([jobId, questionId])
 }
 
-model Resume {
-  id          String        @id   @default(cuid())
-  name        String
-  userId      String
-  url         String
-  createdAt   DateTime      @default(now())
-  deletedAt   DateTime?
-  Application Application[]
-  User        User          @relation(fields: [userId], references: [id])
+
+
+
+enum TeamRole {
+  ADMIN
+  RECRUITER
+  HIRING_MANAGER
+  MEMBER
 }
 
-model User {
-  id          String         @id @default(cuid())
-  email       String         @unique
-  name        String?
-  password    String?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime      @updatedAt
-  username    String?        @unique
-  image       String?
-  companyId   String?
-  role        UserRoleEnum[] @default([APPLICANT])
-  Account     Account[]
-  Application Application[]
-  Resume      Resume[]
-  Company     Company?       @relation(fields: [companyId], references: [id])
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
 }
 
 enum ApplicationStatus {
@@ -178,11 +228,6 @@ enum QuestionTypeEnum {
   NUMBER
   CHECKBOX
   TRUE_OR_FALSE
-}
-
-enum UserRoleEnum {
-  APPLICANT
-  RECRUITER
 }
 
 enum WorkArrangement {

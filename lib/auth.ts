@@ -1,10 +1,9 @@
-// File: lib/auth.ts
-
 import { prisma } from "@/prisma/prisma";
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { compare } from "bcryptjs";
+import { TeamRole } from "@prisma/client";
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -23,27 +22,22 @@ export const authOptions: AuthOptions = {
           where: { email: credentials.email },
         });
 
-        if (!userExists || !userExists.password) {
-          throw new Error("No user found with this email.");
+        if (!userExists || !userExists.hashedPassword) {
+          throw new Error(
+            "No user found with this email and password combination."
+          );
         }
 
         const isCorrect = await compare(
           credentials.password,
-          userExists.password
+          userExists.hashedPassword
         );
 
         if (!isCorrect) {
           throw new Error("Incorrect password. Please try again.");
         }
 
-        // Return the full user object from your database
-        return {
-          id: userExists.id,
-          email: userExists.email,
-          name: userExists.name,
-          role: userExists.role,
-          image: userExists.image,
-        };
+        return userExists;
       },
     }),
     GoogleProvider({
@@ -52,11 +46,9 @@ export const authOptions: AuthOptions = {
     }),
   ],
   session: {
-    // We must use the JWT strategy for the callbacks to be invoked.
     strategy: "jwt",
   },
   callbacks: {
-    // This callback handles user creation/linking for Google sign-in
     async signIn({ user, account }) {
       if (account?.provider === "google") {
         if (!user.email) return false;
@@ -114,36 +106,36 @@ export const authOptions: AuthOptions = {
           return false;
         }
       }
-      return true; // Allow sign-in for other providers (like credentials)
+      return true;
     },
 
-    // ===== THE CRITICAL FIX IS HERE =====
-    // This callback is invoked every time a JWT is created or updated.
     async jwt({ token, user }) {
-      // The `user` object is only passed on the initial sign-in.
       if (user) {
-        // Find the user in our database to get their true ID and role.
-        // This works for both Google and Credentials sign-ins.
-        const dbUser = await prisma.user.findUnique({
+        const dbUserWithMembership = await prisma.user.findUnique({
           where: { email: user.email! },
+          include: {
+            memberships: true,
+          },
         });
 
-        if (dbUser) {
-          // Persist the database ID and role to the token
-          token.id = dbUser.id;
-          token.role = dbUser.role;
+        if (dbUserWithMembership) {
+          token.id = dbUserWithMembership.id;
+
+          if (dbUserWithMembership.memberships.length > 0) {
+            const membership = dbUserWithMembership.memberships[0];
+            token.activeCompanyId = membership.companyId;
+            token.activeCompanyRole = membership.role;
+          }
         }
       }
       return token;
     },
 
-    // This callback is invoked every time a session is accessed.
-    // It receives the token from the `jwt` callback.
     async session({ session, token }) {
       if (token && session.user) {
-        // Pass the ID and role from the token to the session object
         session.user.id = token.id;
-        session.user.role = token.role;
+        session.user.activeCompanyId = token.activeCompanyId;
+        session.user.activeCompanyRole = token.activeCompanyRole;
       }
       return session;
     },

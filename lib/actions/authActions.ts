@@ -1,5 +1,3 @@
-// /lib/actions/authActions.ts
-
 "use server";
 
 import { prisma } from "@/prisma/prisma";
@@ -8,7 +6,6 @@ import {
   AuthRegisterValues,
 } from "../zod schemas/auth/authSchemas";
 import { hash } from "bcryptjs";
-import { UserRoleEnum } from "@prisma/client";
 
 export async function authRegisterAction(values: AuthRegisterValues) {
   try {
@@ -34,12 +31,12 @@ export async function authRegisterAction(values: AuthRegisterValues) {
       data: {
         email,
         name,
-        password: hashedPassword,
-        role: [UserRoleEnum.APPLICANT],
+
+        hashedPassword: hashedPassword,
       },
     });
 
-    const { password: _, ...user } = newUser;
+    const { hashedPassword: _, ...user } = newUser;
 
     return {
       success: true,

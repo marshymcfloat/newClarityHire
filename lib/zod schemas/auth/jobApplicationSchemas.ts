@@ -1,5 +1,3 @@
-// File: lib/zod schemas/auth/jobApplicationSchemas.ts
-
 import { Question, QuestionOnJob, QuestionTypeEnum } from "@prisma/client";
 import { z } from "zod";
 
@@ -7,7 +5,6 @@ type QuestionOnJobWithQuestion = QuestionOnJob & {
   Question: Question;
 };
 
-// --- Helper function to generate the dynamic 'answers' schema ---
 const generateAnswersSchema = (questions: QuestionOnJobWithQuestion[]) => {
   const shape = questions.reduce((acc, q) => {
     const { Question: question, isRequired } = q;
@@ -55,8 +52,7 @@ const generateAnswersSchema = (questions: QuestionOnJobWithQuestion[]) => {
   return z.object(shape);
 };
 
-// --- Frontend Schema ---
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_FILE_TYPES = [
   "application/pdf",
   "application/msword",
@@ -101,7 +97,6 @@ export const createApplicationSchema = (
     });
 };
 
-// --- Backend Schema ---
 export const createBackendApplicationSchema = (
   questions: QuestionOnJobWithQuestion[]
 ) => {
