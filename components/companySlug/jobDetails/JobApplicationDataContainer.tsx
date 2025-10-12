@@ -21,7 +21,9 @@ const JobApplicationDataContainer = async ({ jobId }: { jobId: string }) => {
     where: { userId: session.user.id },
   });
 
-  return <JobForm questions={questionJobs} resumes={userResumes} />;
+  return (
+    <JobForm questions={questionJobs} resumes={userResumes} jobId={jobId} />
+  );
 };
 
 export default JobApplicationDataContainer;

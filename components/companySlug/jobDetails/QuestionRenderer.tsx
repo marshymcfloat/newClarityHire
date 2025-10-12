@@ -1,8 +1,9 @@
+// File: components/your-path/QuestionRenderer.tsx
+
 "use client";
 
 import { Control, FieldValues, Path } from "react-hook-form";
 import { Question, QuestionTypeEnum } from "@prisma/client";
-
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   FormControl,
@@ -27,7 +28,7 @@ const QuestionRenderer = <TFieldValues extends FieldValues>({
   type,
   question,
 }: QuestionRendererProps<TFieldValues>) => {
-  const questionCardStyle = "space-y-3 rounded-lg border p-4 shadow-sm";
+  const questionCardStyle = "space-y-3 rounded-lg border bg-card p-4 shadow-sm";
 
   switch (type) {
     case "TEXT":
@@ -161,7 +162,6 @@ const QuestionRenderer = <TFieldValues extends FieldValues>({
                       const fieldValue: string[] = Array.isArray(field.value)
                         ? field.value
                         : [];
-
                       return (
                         <FormItem
                           key={option}
@@ -175,7 +175,7 @@ const QuestionRenderer = <TFieldValues extends FieldValues>({
                                   ? field.onChange([...fieldValue, option])
                                   : field.onChange(
                                       fieldValue.filter(
-                                        (value: string) => value !== option
+                                        (value) => value !== option
                                       )
                                     );
                               }}

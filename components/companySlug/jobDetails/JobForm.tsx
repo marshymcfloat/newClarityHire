@@ -5,7 +5,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Question, QuestionOnJob, Resume } from "@prisma/client";
 import { useMemo, useState } from "react";
-
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Loader2, UploadCloud } from "lucide-react";
+import { createApplicationSchema } from "@/lib/zod schemas/auth/jobApplicationSchemas";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -16,11 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-
 import { Input } from "@/components/ui/input";
-import QuestionRenderer from "./QuestionRenderer";
-import { Separator } from "@/components/ui/separator";
-
 import {
   Select,
   SelectContent,
@@ -28,8 +27,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UploadCloud } from "lucide-react";
-import { createApplicationSchema } from "@/lib/zod schemas/auth/jobApplicationSchemas";
+import { Separator } from "@/components/ui/separator";
+import QuestionRenderer from "./QuestionRenderer";
+import { SubmitApplicationAction } from "@/lib/actions/jobApplicationActionts";
 
 type QuestionOnJobWithQuestion = QuestionOnJob & {
   Question: Question;
@@ -38,9 +38,10 @@ type QuestionOnJobWithQuestion = QuestionOnJob & {
 type JobFormProps = {
   questions: QuestionOnJobWithQuestion[];
   resumes: Resume[];
+  jobId: string;
 };
 
-const JobForm = ({ questions, resumes }: JobFormProps) => {
+const JobForm = ({ questions, resumes, jobId }: JobFormProps) => {
   const [resumeOption, setResumeOption] = useState<"select" | "upload">(
     resumes.length > 0 ? "select" : "upload"
   );
@@ -49,7 +50,6 @@ const JobForm = ({ questions, resumes }: JobFormProps) => {
     () => createApplicationSchema(questions),
     [questions]
   );
-
   type ApplicationFormValues = z.infer<typeof formSchema>;
 
   const form = useForm<ApplicationFormValues>({
@@ -58,7 +58,6 @@ const JobForm = ({ questions, resumes }: JobFormProps) => {
       resumeSelection: resumes.length > 0 ? "select" : "upload",
       resumeId: resumes.length > 0 ? resumes[0].id : undefined,
       newResumeFile: undefined,
-
       answers: questions.reduce((acc, q) => {
         acc[q.Question.id] = q.Question.type === "CHECKBOX" ? [] : "";
         return acc;
@@ -66,8 +65,34 @@ const JobForm = ({ questions, resumes }: JobFormProps) => {
     },
   });
 
+  const { mutate, isPending } = useMutation({
+    mutationFn: SubmitApplicationAction,
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success(data.message);
+      } else {
+        toast.error(data.error || "An unknown error occurred.");
+      }
+    },
+    onError: (error) => {
+      toast.error("Failed to submit application. Please try again.");
+      console.error(error);
+    },
+  });
+
   const onSubmit = (values: ApplicationFormValues) => {
-    console.log("Form Submitted:", values);
+    const formData = new FormData();
+
+    formData.append("jobId", jobId);
+
+    if (values.resumeSelection === "select" && values.resumeId) {
+      formData.append("resumeId", values.resumeId);
+    } else if (values.resumeSelection === "upload" && values.newResumeFile) {
+      formData.append("newResumeFile", values.newResumeFile);
+    }
+    formData.append("answers", JSON.stringify(values.answers));
+
+    mutate(formData);
   };
 
   return (
@@ -113,7 +138,6 @@ const JobForm = ({ questions, resumes }: JobFormProps) => {
                         </p>
                       </FormLabel>
                     </FormItem>
-
                     <FormItem>
                       <RadioGroupItem
                         value="upload"
@@ -136,7 +160,6 @@ const JobForm = ({ questions, resumes }: JobFormProps) => {
               </FormItem>
             )}
           />
-
           <div className="pt-4">
             {resumeOption === "select" && (
               <FormField
@@ -169,7 +192,6 @@ const JobForm = ({ questions, resumes }: JobFormProps) => {
                 )}
               />
             )}
-
             {resumeOption === "upload" && (
               <FormField
                 control={form.control}
@@ -218,8 +240,8 @@ const JobForm = ({ questions, resumes }: JobFormProps) => {
             )}
           </div>
         </div>
-
         <Separator />
+
         <div className="space-y-6">
           {questions.map((q) => (
             <QuestionRenderer
@@ -232,7 +254,10 @@ const JobForm = ({ questions, resumes }: JobFormProps) => {
           ))}
         </div>
 
-        <Button type="submit">Submit Application</Button>
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isPending ? "Submitting..." : "Submit Application"}
+        </Button>
       </form>
     </Form>
   );
