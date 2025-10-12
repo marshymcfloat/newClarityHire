@@ -39,7 +39,7 @@ const CreateCompanyButton = () => {
             Launch Your Company
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Let's get you started. Fill in the details below.
+            Let&apos;s get you started. Fill in the details below.
           </p>
         </header>
 
