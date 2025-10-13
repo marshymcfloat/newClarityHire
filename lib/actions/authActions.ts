@@ -14,6 +14,7 @@ import { error } from "console";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth";
 import { CompanySize } from "@prisma/client";
+import { formatToTitleCase } from "../utils";
 
 export async function authRegisterAction(values: AuthRegisterValues) {
   try {
@@ -155,10 +156,13 @@ export async function createCompanyAndUserAction(
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
+    const formattedFullName = formatToTitleCase(data.fullname);
+    const formattedCompanyName = formatToTitleCase(data.companyName);
+
     const newCompany = await prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
         data: {
-          name: data.fullname,
+          name: formattedFullName,
           email: data.workEmail,
           hashedPassword: hashedPassword,
         },
@@ -166,7 +170,7 @@ export async function createCompanyAndUserAction(
 
       const company = await tx.company.create({
         data: {
-          name: data.companyName,
+          name: formattedCompanyName,
           slug: data.companySlug,
           ownerId: newUser.id,
           companySize: data.companySize as CompanySize,

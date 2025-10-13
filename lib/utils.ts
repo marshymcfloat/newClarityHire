@@ -43,3 +43,18 @@ export const getInitials = (name: string = ""): string => {
   }
   return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
 };
+
+export const formatToTitleCase = (str: string | null | undefined): string => {
+  if (!str) {
+    return "";
+  }
+
+  return str
+    .trim()
+    .toLowerCase()
+    .split(" ")
+    .map((word) =>
+      word.length > 0 ? word.charAt(0).toUpperCase() + word.slice(1) : ""
+    )
+    .join(" ");
+};

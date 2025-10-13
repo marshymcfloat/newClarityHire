@@ -94,6 +94,7 @@ const FormStageTwo = ({ prevStep }: { prevStep: () => void }) => {
     if (!companySlugInput || companySlugInput.trim() === "") {
       setSlugStatus("idle");
       setSlugSuggestions([]);
+      setIsSlugManuallyEdited(false);
       return;
     }
 
@@ -198,7 +199,11 @@ const FormStageTwo = ({ prevStep }: { prevStep: () => void }) => {
                     {...field}
                     placeholder="my-awesome-company-inc"
                     onChange={(e) => {
-                      setIsSlugManuallyEdited(true);
+                      // Only set manual edit to true if there is content.
+                      // This prevents an empty input from locking auto-generation.
+                      if (e.target.value.trim() !== "") {
+                        setIsSlugManuallyEdited(true);
+                      }
                       form.clearErrors("companySlug");
                       field.onChange(e);
                     }}
