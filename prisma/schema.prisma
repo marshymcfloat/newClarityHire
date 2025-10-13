@@ -53,11 +53,12 @@ model Company {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   coverImage  String?
-  description String
+  description String?
   image       String?
-  location    String
+  location    String?
   slug        String   @unique
   websiteUrl  String?
+  companySize      CompanySize?
 
   plan        String   @default("free")
   
@@ -233,4 +234,12 @@ enum WorkArrangement {
   ON_SITE
   HYBRID
   REMOTE
+}
+
+enum CompanySize {
+  SIZE_1_10
+  SIZE_11_50
+  SIZE_51_200
+  SIZE_201_1000
+  SIZE_1000_PLUS
 }

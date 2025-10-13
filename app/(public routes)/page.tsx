@@ -1,10 +1,10 @@
-import CreateCompanyButton from "@/components/CreateCompanyButton";
+import CreateCompanyDialog from "@/components/CompanyAuth/CreateCompanyDialog";
 import Link from "next/link";
 
 const page = () => {
   return (
     <main className="overflow-y-auto">
-      <CreateCompanyButton />
+      <CreateCompanyDialog />
       <div className="h-screen flex justify-center items-center text-center">
         <div className=" animate-fade-in">
           <h1
@@ -13,7 +13,7 @@ const page = () => {
             md:text-8xl lg:text-9xl 
             bg-gradient-to-b from-slate-900 to-slate-600 
             bg-clip-text text-transparent
-            leading-normal 
+            leading-normal  
           "
           >
             ClarityHire.
