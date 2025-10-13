@@ -13,6 +13,7 @@ import bcrypt, { hash } from "bcryptjs";
 import { error } from "console";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth";
+import { CompanySize } from "@prisma/client";
 
 export async function authRegisterAction(values: AuthRegisterValues) {
   try {
@@ -168,7 +169,9 @@ export async function createCompanyAndUserAction(
           name: data.companyName,
           slug: data.companySlug,
           ownerId: newUser.id,
-          companySize: data.companySize,
+          companySize: data.companySize as CompanySize,
+          description: "",
+          location: "",
         },
       });
 
