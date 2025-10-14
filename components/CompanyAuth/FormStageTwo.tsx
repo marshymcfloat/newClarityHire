@@ -35,6 +35,8 @@ import { useMutation } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { toast } from "sonner";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 type SlugStatus = "idle" | "checking" | "available" | "taken";
 type CombinedFormData = {
@@ -65,7 +67,7 @@ const FormStageTwo = ({ prevStep }: { prevStep: () => void }) => {
   const [slugSuggestions, setSlugSuggestions] = useState<string[]>([]);
 
   const stepOneState = useSelector((state: RootState) => state.launchCompany);
-
+  const router = useRouter();
   const form = useForm<CompanyCreationStageTwoValues>({
     resolver: zodResolver(companyCreationStageTwoSchema),
     defaultValues: {
@@ -133,9 +135,23 @@ const FormStageTwo = ({ prevStep }: { prevStep: () => void }) => {
     mutationFn: (variables: CombinedFormData) =>
       createCompanyAndUserAction(variables.form1Values, variables.form2Values),
 
-    onSuccess: (data) => {
+    onSuccess: async (data, variable) => {
       if (data.success && data.company) {
         toast.success("Your company has been launched successfully!");
+
+        const response = await signIn("credentials", {
+          email: variable.form1Values.workEmail,
+          password: variable.form1Values.password,
+          redirect: false,
+        });
+
+        if (!response?.ok) {
+          toast.error(response?.error);
+          return;
+        }
+
+        toast.success("Logged in Successfully, wait for redirection");
+        router.refresh();
       } else {
         toast.error(data.error || "An unknown error occurred.");
       }
@@ -199,8 +215,6 @@ const FormStageTwo = ({ prevStep }: { prevStep: () => void }) => {
                     {...field}
                     placeholder="my-awesome-company-inc"
                     onChange={(e) => {
-                      // Only set manual edit to true if there is content.
-                      // This prevents an empty input from locking auto-generation.
                       if (e.target.value.trim() !== "") {
                         setIsSlugManuallyEdited(true);
                       }

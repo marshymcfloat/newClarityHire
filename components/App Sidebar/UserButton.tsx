@@ -1,5 +1,3 @@
-// components/AppSidebar/UserButton.tsx
-
 "use client";
 
 import { signOut, useSession } from "next-auth/react";
@@ -83,7 +81,11 @@ const UserButton = () => {
           <span>Profile</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut()}>
+        <DropdownMenuItem
+          onClick={() =>
+            signOut({ redirect: true, callbackUrl: "http://localhost:3000" })
+          }
+        >
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>

@@ -1,3 +1,5 @@
+// next-auth.d.ts
+
 import { TeamRole } from "@prisma/client";
 import { DefaultSession } from "next-auth";
 import { JWT } from "next-auth/jwt";
@@ -13,9 +15,9 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string;
-
       activeCompanyId?: string;
       activeCompanyRole?: TeamRole;
+      isRecruiter: boolean; // <-- Add this
     } & DefaultSession["user"];
   }
 }
@@ -28,5 +30,6 @@ declare module "next-auth/jwt" {
     id: string;
     activeCompanyId?: string;
     activeCompanyRole?: TeamRole;
+    isRecruiter: boolean; // <-- Add this
   }
 }

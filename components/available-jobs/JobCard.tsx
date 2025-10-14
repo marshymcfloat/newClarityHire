@@ -21,7 +21,10 @@ interface JobCardProps {
 
 const JobCard = ({ job, companySlug }: JobCardProps) => {
   return (
-    <Link href={`/${companySlug}/${job.id}`} className="block h-full">
+    <Link
+      href={`/${companySlug}/available-jobs/${job.id}`}
+      className="block h-full"
+    >
       <Card className="flex h-full flex-col transition-all duration-200 hover:border-primary hover:shadow-lg">
         <CardHeader className="pb-4">
           <CardTitle className="text-xl font-semibold leading-tight">

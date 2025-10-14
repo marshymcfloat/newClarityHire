@@ -20,6 +20,9 @@ export const authOptions: AuthOptions = {
 
         const userExists = await prisma.user.findUnique({
           where: { email: credentials.email },
+          include: {
+            memberships: true,
+          },
         });
 
         if (!userExists || !userExists.hashedPassword) {
@@ -121,6 +124,17 @@ export const authOptions: AuthOptions = {
         if (dbUserWithMembership) {
           token.id = dbUserWithMembership.id;
 
+          const recruiterRoles: TeamRole[] = [
+            TeamRole.ADMIN,
+            TeamRole.RECRUITER,
+            TeamRole.HIRING_MANAGER,
+          ];
+
+          const isRecruiter = dbUserWithMembership.memberships.some(
+            (membership) => recruiterRoles.includes(membership.role)
+          );
+
+          token.isRecruiter = isRecruiter;
           if (dbUserWithMembership.memberships.length > 0) {
             const membership = dbUserWithMembership.memberships[0];
             token.activeCompanyId = membership.companyId;
@@ -136,6 +150,7 @@ export const authOptions: AuthOptions = {
         session.user.id = token.id;
         session.user.activeCompanyId = token.activeCompanyId;
         session.user.activeCompanyRole = token.activeCompanyRole;
+        session.user.isRecruiter = token.isRecruiter;
       }
       return session;
     },
