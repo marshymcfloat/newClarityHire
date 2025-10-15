@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { GoogleGenAI } from "@google/genai";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -57,4 +58,17 @@ export const formatToTitleCase = (str: string | null | undefined): string => {
       word.length > 0 ? word.charAt(0).toUpperCase() + word.slice(1) : ""
     )
     .join(" ");
+};
+
+export const geminiGenerate = async (inputField: string, job: string) => {
+  const ai = new GoogleGenAI({
+    apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY,
+  });
+
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: `generate a ${inputField} for ${job}, make it comprehensive`,
+  });
+
+  console.log(response.text);
 };

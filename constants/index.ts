@@ -162,3 +162,16 @@ export const WORK_ARRANGEMENT_MAP: Record<WorkArrangement, string> = {
   [WorkArrangement.HYBRID]: "Hybrid",
   [WorkArrangement.REMOTE]: "Remote",
 };
+
+export const departments = [
+  "Information Technology",
+  "Marketing",
+  "Finance",
+  "Human Resources",
+  "Operations",
+  "Research and Development",
+  "Sales",
+  "Procurement",
+  "Customer Service",
+  "Legal and Compliance",
+];

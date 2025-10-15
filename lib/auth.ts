@@ -139,6 +139,7 @@ export const authOptions: AuthOptions = {
             const membership = dbUserWithMembership.memberships[0];
             token.activeCompanyId = membership.companyId;
             token.activeCompanyRole = membership.role;
+            token.memberId = membership.id;
           }
         }
       }
@@ -151,6 +152,7 @@ export const authOptions: AuthOptions = {
         session.user.activeCompanyId = token.activeCompanyId;
         session.user.activeCompanyRole = token.activeCompanyRole;
         session.user.isRecruiter = token.isRecruiter;
+        session.user.memberId = token.memberId;
       }
       return session;
     },

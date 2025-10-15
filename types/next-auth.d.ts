@@ -18,6 +18,7 @@ declare module "next-auth" {
       activeCompanyId?: string;
       activeCompanyRole?: TeamRole;
       isRecruiter: boolean; // <-- Add this
+      memberId: string;
     } & DefaultSession["user"];
   }
 }
@@ -31,5 +32,6 @@ declare module "next-auth/jwt" {
     activeCompanyId?: string;
     activeCompanyRole?: TeamRole;
     isRecruiter: boolean; // <-- Add this
+    memberId: string;
   }
 }

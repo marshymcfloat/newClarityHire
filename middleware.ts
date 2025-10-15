@@ -6,12 +6,8 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-  const recruiterPathRegex = /^\/[^/]+\/[^/]+\/dashboard(\/.*)?$/;
-
-  if (recruiterPathRegex.test(pathname)) {
-    return NextResponse.next();
-  }
-
+  // 1. If the user is not a logged-in recruiter, do nothing.
+  // Let the page-level logic handle authorization.
   if (!token || !token.isRecruiter) {
     return NextResponse.next();
   }
@@ -19,6 +15,7 @@ export async function middleware(req: NextRequest) {
   const userId = token.id as string;
   const companyId = token.activeCompanyId as string;
 
+  // 2. If token is incomplete, do nothing and let the user get logged out or handled by the app.
   if (!userId || !companyId) {
     console.error("Recruiter token is missing userId or activeCompanyId.");
     return NextResponse.next();
@@ -44,14 +41,15 @@ export async function middleware(req: NextRequest) {
         id: memberId,
         company: { slug: companySlug },
       } = companyMember;
-      const redirectUrl = new URL(
-        `/${companySlug}/${memberId}/dashboard`,
-        req.url
-      );
 
-      if (redirectUrl.pathname !== pathname) {
-        return NextResponse.redirect(redirectUrl);
+      const recruiterBasePath = `/${companySlug}/${memberId}`;
+
+      if (pathname.startsWith(recruiterBasePath)) {
+        return NextResponse.next();
       }
+
+      const redirectUrl = new URL(`${recruiterBasePath}/dashboard`, req.url);
+      return NextResponse.redirect(redirectUrl);
     }
   } catch (error) {
     console.error("Error in middleware while fetching company data:", error);
