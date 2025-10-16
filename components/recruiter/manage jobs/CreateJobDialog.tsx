@@ -19,7 +19,7 @@ const CreateJobDialog = () => {
       <DialogTrigger asChild>
         <Button className="ml-auto w-[150px]">Create Job</Button>
       </DialogTrigger>
-      <DialogContent className="lg:max-h-[85vh] min-w-[60vw]">
+      <DialogContent className="lg:max-h-[85vh] h-[95vh] min-w-[60vw] overflow-y-auto">
         <DialogHeader className="hidden">
           <DialogTitle className="text-center"></DialogTitle>
         </DialogHeader>

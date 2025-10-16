@@ -46,6 +46,7 @@ export const createJobSchema = z
 
     workArrangement: WorkArrangementEnum,
     workSchedule: z.string().optional(),
+    questionIds: z.array(z.string()).optional(),
   })
   .refine(
     (data) => {

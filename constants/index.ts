@@ -1,6 +1,7 @@
 import {
   ApplicationStatus,
   ExperienceLevel,
+  JobStatus,
   JobType,
   QuestionTypeEnum,
   WorkArrangement,
@@ -161,6 +162,12 @@ export const WORK_ARRANGEMENT_MAP: Record<WorkArrangement, string> = {
   [WorkArrangement.ON_SITE]: "On-site",
   [WorkArrangement.HYBRID]: "Hybrid",
   [WorkArrangement.REMOTE]: "Remote",
+};
+
+export const JOB_STATUS_MAP: Record<JobStatus, string> = {
+  DRAFT: "Draft",
+  PUBLISHED: "Published",
+  ARCHIVED: "Archived",
 };
 
 export const departments = [
