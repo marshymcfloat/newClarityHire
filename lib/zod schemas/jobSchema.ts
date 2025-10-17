@@ -2,22 +2,30 @@
 
 import { z } from "zod";
 
+// --- ENUMS (No changes here) ---
+
 export const ExperienceLevelEnum = z.enum([
-  "INTERN",
-  "ENTRY",
-  "MID",
+  "INTERNSHIP",
+  "ENTRY_LEVEL",
+  "ASSOCIATE",
+  "MID_LEVEL",
   "SENIOR",
-  "EXECUTIVE",
+  "STAFF",
+  "PRINCIPAL",
 ]);
-export const JobStatusEnum = z.enum(["DRAFT", "PUBLISHED", "CLOSED"]);
+
+export const JobStatusEnum = z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]);
+
 export const JobTypeEnum = z.enum([
   "FULL_TIME",
   "PART_TIME",
   "CONTRACT",
-  "TEMPORARY",
   "INTERNSHIP",
 ]);
+
 export const WorkArrangementEnum = z.enum(["ON_SITE", "HYBRID", "REMOTE"]);
+
+// --- SCHEMA ---
 
 export const createJobSchema = z
   .object({
@@ -35,18 +43,26 @@ export const createJobSchema = z
     experienceLevel: ExperienceLevelEnum,
     status: JobStatusEnum,
     jobType: JobTypeEnum,
+    workArrangement: WorkArrangementEnum,
     location: z.string().min(2, { message: "Location is required" }),
     salaryMin: z.number().int().nonnegative().optional(),
     salaryMax: z.number().int().nonnegative().optional(),
-
     benefits: z.array(z.string()).optional(),
     qualifications: z.array(z.string()).optional(),
     responsibilities: z.array(z.string()).optional(),
     skills: z.array(z.string()).optional(),
-
-    workArrangement: WorkArrangementEnum,
     workSchedule: z.string().optional(),
-    questionIds: z.array(z.string()).optional(),
+
+    // --- CHANGE HERE ---
+    // Renamed from `questionIds` and updated the schema to match our component's output.
+    questions: z
+      .array(
+        z.object({
+          questionId: z.string(),
+          required: z.boolean(),
+        })
+      )
+      .optional(),
   })
   .refine(
     (data) => {
@@ -60,4 +76,5 @@ export const createJobSchema = z
       path: ["salaryMin"],
     }
   );
+
 export type CreateJobValues = z.infer<typeof createJobSchema>;

@@ -1,7 +1,7 @@
-// components/jobs/CreateJobForm.tsx
-"use client";
+// src/components/CreateJobForm.tsx
 
-import { useState, useTransition } from "react";
+"use client";
+import { Suspense, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiGeminiLine } from "react-icons/ri";
@@ -11,9 +11,7 @@ import type {
   ExperienceLevel,
   WorkArrangement,
 } from "@prisma/client";
-
 import { createJobSchema, CreateJobValues } from "@/lib/zod schemas/jobSchema";
-
 import {
   departments,
   EXPERIENCE_LEVEL_MAP,
@@ -21,7 +19,6 @@ import {
   JOB_TYPE_MAP,
   WORK_ARRANGEMENT_MAP,
 } from "@/constants";
-
 // UI Components
 import { Button } from "@/components/ui/button";
 import {
@@ -42,22 +39,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-
 import {
+  createJobAction,
   generateJobDescriptionField,
   generateJobDescriptionList,
   GenerateListPayload,
   GenerateSummaryPayload,
-} from "@/lib/actions/createJobActions"; // Adjust path if necessary
+} from "@/lib/actions/createJobActions";
 import MultiValueInput from "./MultiValueInput";
+import SelectQuestion from "./SelectQuestion"; // Ensure path is correct
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { LoaderCircle } from "lucide-react";
+import { useParams } from "next/navigation";
 
-const CreateJobForm = () => {
+const CreateJobForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const [isSubmitting, startTransition] = useTransition();
   const [isGenerating, setIsGenerating] = useState({
     summary: false,
     qualifications: false,
     responsibilities: false,
   });
+
+  const { companySlug, memberId } = useParams();
 
   const form = useForm<CreateJobValues>({
     resolver: zodResolver(createJobSchema),
@@ -67,7 +71,7 @@ const CreateJobForm = () => {
       department: "",
       location: "",
       jobType: "FULL_TIME",
-      experienceLevel: "ENTRY",
+      experienceLevel: "ENTRY_LEVEL",
       workArrangement: "ON_SITE",
       status: "DRAFT",
       salaryMin: undefined,
@@ -77,6 +81,7 @@ const CreateJobForm = () => {
       responsibilities: [],
       skills: [],
       workSchedule: "",
+      questions: [],
     },
   });
 
@@ -108,7 +113,6 @@ const CreateJobForm = () => {
       setIsGenerating((prev) => ({ ...prev, summary: false }));
     });
   };
-
   const handleGenerateList = (
     fieldName: "qualifications" | "responsibilities"
   ) => {
@@ -140,13 +144,6 @@ const CreateJobForm = () => {
     });
   };
 
-  const onSubmit = (values: CreateJobValues) => {
-    startTransition(() => {
-      console.log("Form Submitted:", values);
-      alert("Form submitted successfully! Check the console for the data.");
-    });
-  };
-
   const AiGenerateButton = ({
     onClick,
     isLoading,
@@ -167,14 +164,42 @@ const CreateJobForm = () => {
     </Button>
   );
 
+  const { mutate, isPending } = useMutation({
+    mutationFn: createJobAction,
+    onSuccess: (data) => {
+      if (!data.success) {
+        toast(data.error);
+        return;
+      }
+
+      toast(data.message);
+      onSuccess();
+    },
+  });
+
+  const onSubmit = (values: CreateJobValues) => {
+    if (
+      !companySlug ||
+      typeof companySlug !== "string" ||
+      !memberId ||
+      typeof memberId !== "string"
+    ) {
+      toast.error("An error occurred. Missing required URL parameters.");
+      return;
+    }
+
+    const payload = { ...values, companySlug, memberId };
+
+    mutate(payload);
+  };
+  const disabled = isSubmitting || isPending;
+
   return (
     <Form {...form}>
-      {/* UPDATED: Changed gap-y for slightly tighter rows */}
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4"
       >
-        {/* --- UPDATED: RESTRUCTURED LEFT COLUMN --- */}
         <div className="space-y-4">
           <FormField
             control={form.control}
@@ -193,8 +218,6 @@ const CreateJobForm = () => {
               </FormItem>
             )}
           />
-
-          {/* Grouped multiple fields into a single grid to reduce dead space */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
               control={form.control}
@@ -204,7 +227,6 @@ const CreateJobForm = () => {
                   <FormLabel className="text-xs sm:text-sm">
                     Department
                   </FormLabel>
-                  {/* FIXED: Changed defaultValue to value */}
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="text-xs sm:text-sm">
@@ -233,7 +255,6 @@ const CreateJobForm = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-xs sm:text-sm">Job Type</FormLabel>
-                  {/* FIXED: Changed defaultValue to value */}
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="text-xs sm:text-sm">
@@ -264,7 +285,6 @@ const CreateJobForm = () => {
                   <FormLabel className="text-xs sm:text-sm">
                     Experience Level
                   </FormLabel>
-                  {/* FIXED: Changed defaultValue to value */}
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="text-xs sm:text-sm">
@@ -275,7 +295,7 @@ const CreateJobForm = () => {
                       {Object.keys(EXPERIENCE_LEVEL_MAP).map((key) => (
                         <SelectItem
                           key={key}
-                          value={key}
+                          value={key as ExperienceLevel}
                           className="text-xs sm:text-sm"
                         >
                           {EXPERIENCE_LEVEL_MAP[key as ExperienceLevel]}
@@ -295,7 +315,6 @@ const CreateJobForm = () => {
                   <FormLabel className="text-xs sm:text-sm">
                     Work Arrangement
                   </FormLabel>
-                  {/* FIXED: Changed defaultValue to value */}
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="text-xs sm:text-sm">
@@ -409,9 +428,29 @@ const CreateJobForm = () => {
               </FormItem>
             )}
           />
+
+          <FormField
+            control={form.control}
+            name="questions" // The name now matches our schema
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-xs sm:text-sm">
+                  Application Questions (Optional)
+                </FormLabel>
+                <FormControl>
+                  <SelectQuestion
+                    value={field.value ?? []}
+                    onChange={field.onChange}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         <div className="space-y-6">
+          {/* ... (all your other form fields: summary, skills, etc. remain the same) ... */}
           <FormField
             control={form.control}
             name="summary"
@@ -546,12 +585,11 @@ const CreateJobForm = () => {
             />
             <Button
               type="submit"
-              disabled={
-                isSubmitting || Object.values(isGenerating).some(Boolean)
-              }
+              disabled={disabled || Object.values(isGenerating).some(Boolean)}
               className="text-xs sm:text-sm"
             >
-              {isSubmitting ? "Saving..." : "Create Job Posting"}
+              {disabled && <LoaderCircle className="animate-spin" />}
+              {disabled ? "Saving..." : "Create Job Posting"}
             </Button>
           </div>
         </div>

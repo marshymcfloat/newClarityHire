@@ -1,6 +1,11 @@
 "use server";
 import { z } from "zod";
 import { GoogleGenAI } from "@google/genai";
+import { createJobSchema, CreateJobValues } from "../zod schemas/jobSchema";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth";
+import { prisma } from "@/prisma/prisma";
+import { revalidatePath } from "next/cache";
 
 export type GenerateSummaryPayload = {
   jobTitle: string;
@@ -140,5 +145,62 @@ export async function generateJobDescriptionList(payload: GenerateListPayload) {
       error:
         "Failed to generate list. The AI may be unavailable or returned an invalid format.",
     };
+  }
+}
+
+type createJobActionPayload = CreateJobValues & {
+  companySlug: string;
+  memberId: string;
+};
+
+export async function createJobAction(values: createJobActionPayload) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    console.log(values);
+
+    if (!session?.user) {
+      return { success: false, error: "Please Login First" };
+    }
+
+    const validationResult = createJobSchema.safeParse(values);
+
+    if (!validationResult.success) {
+      return { success: false, error: "Invalid Input" };
+    }
+
+    const { questions, ...jobData } = validationResult.data;
+
+    await prisma.$transaction(async (tx) => {
+      const createdJob = await tx.job.create({
+        data: {
+          ...jobData,
+          status: "PUBLISHED",
+          Company: {
+            connect: {
+              id: session.user.activeCompanyId,
+            },
+          },
+        },
+      });
+
+      if (questions && questions.length > 0) {
+        const questionsForJob = questions.map((ques) => ({
+          jobId: createdJob.id,
+          questionId: ques.questionId,
+          isRequired: ques.required,
+        }));
+
+        await tx.questionOnJob.createMany({ data: questionsForJob });
+      }
+
+      return createdJob;
+    });
+
+    revalidatePath(`/${values.companySlug}/${values.memberId}/manage-jobs`);
+    return { success: true, message: "Created Job Successfully" };
+  } catch (err) {
+    console.error("There is an unexpected error occured");
+    return { success: false, error: "There is an unexpected error occured" };
   }
 }

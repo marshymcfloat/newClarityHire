@@ -23,7 +23,7 @@ const CreateJobDialog = () => {
         <DialogHeader className="hidden">
           <DialogTitle className="text-center"></DialogTitle>
         </DialogHeader>
-        <CreateJobForm />
+        <CreateJobForm onSuccess={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );
