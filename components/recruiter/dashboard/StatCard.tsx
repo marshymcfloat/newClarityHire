@@ -10,11 +10,9 @@ import React from "react";
 const StatCard = ({
   title,
   description,
-  data,
 }: {
   title: string;
   description?: string;
-  data: any;
 }) => {
   return (
     <Card className="max-w-[400px]">
