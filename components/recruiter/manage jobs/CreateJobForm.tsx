@@ -1,17 +1,29 @@
 // src/components/CreateJobForm.tsx
 
 "use client";
-import { Suspense, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiGeminiLine } from "react-icons/ri";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { LoaderCircle } from "lucide-react";
+import { useParams } from "next/navigation";
 import type {
   JobStatus,
   JobType,
   ExperienceLevel,
   WorkArrangement,
 } from "@prisma/client";
+
+// Libs, Schemas & Constants
 import { createJobSchema, CreateJobValues } from "@/lib/zod schemas/jobSchema";
+import {
+  createJobAction,
+  generateJobDescriptionField,
+  generateJobDescriptionList,
+  GenerateListPayload,
+  GenerateSummaryPayload,
+} from "@/lib/actions/createJobActions";
 import {
   departments,
   EXPERIENCE_LEVEL_MAP,
@@ -19,6 +31,7 @@ import {
   JOB_TYPE_MAP,
   WORK_ARRANGEMENT_MAP,
 } from "@/constants";
+
 // UI Components
 import { Button } from "@/components/ui/button";
 import {
@@ -39,19 +52,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import {
-  createJobAction,
-  generateJobDescriptionField,
-  generateJobDescriptionList,
-  GenerateListPayload,
-  GenerateSummaryPayload,
-} from "@/lib/actions/createJobActions";
+
+// Custom Components
 import MultiValueInput from "./MultiValueInput";
-import SelectQuestion from "./SelectQuestion"; // Ensure path is correct
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { LoaderCircle } from "lucide-react";
-import { useParams } from "next/navigation";
+import SelectQuestion from "./SelectQuestion";
+import FormSection from "./FormSection"; // Assuming you placed FormSection in the same directory
+import { AiGenerateButton } from "./AiGenerateButton"; // Assuming you placed AiGenerateButton here
 
 const CreateJobForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const [isSubmitting, startTransition] = useTransition();
@@ -113,6 +119,7 @@ const CreateJobForm = ({ onSuccess }: { onSuccess: () => void }) => {
       setIsGenerating((prev) => ({ ...prev, summary: false }));
     });
   };
+
   const handleGenerateList = (
     fieldName: "qualifications" | "responsibilities"
   ) => {
@@ -144,36 +151,19 @@ const CreateJobForm = ({ onSuccess }: { onSuccess: () => void }) => {
     });
   };
 
-  const AiGenerateButton = ({
-    onClick,
-    isLoading,
-  }: {
-    onClick: () => void;
-    isLoading: boolean;
-  }) => (
-    <Button
-      type="button"
-      variant="ghost"
-      size="sm"
-      onClick={onClick}
-      disabled={isLoading || isSubmitting}
-      className="flex items-center gap-2 text-primary hover:text-primary h-8 px-2 text-xs sm:h-9 sm:px-3 sm:text-sm"
-    >
-      <RiGeminiLine className="h-4 w-4" />
-      {isLoading ? "Generating..." : "Generate with AI"}
-    </Button>
-  );
-
   const { mutate, isPending } = useMutation({
     mutationFn: createJobAction,
     onSuccess: (data) => {
       if (!data.success) {
-        toast(data.error);
+        toast.error(data.error);
         return;
       }
-
-      toast(data.message);
+      toast.success(data.message);
       onSuccess();
+    },
+    onError: (error) => {
+      toast.error("An unexpected error occurred. Please try again.");
+      console.error(error);
     },
   });
 
@@ -187,30 +177,28 @@ const CreateJobForm = ({ onSuccess }: { onSuccess: () => void }) => {
       toast.error("An error occurred. Missing required URL parameters.");
       return;
     }
-
     const payload = { ...values, companySlug, memberId };
-
     mutate(payload);
   };
+
   const disabled = isSubmitting || isPending;
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4"
-      >
-        <div className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <FormSection
+          title="Job Details"
+          description="Provide the core details about the job. This information will be displayed prominently."
+        >
           <FormField
             control={form.control}
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs sm:text-sm">Job Title</FormLabel>
+                <FormLabel>Job Title</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="e.g., Senior Frontend Developer"
-                    className="text-xs sm:text-sm"
                     {...field}
                   />
                 </FormControl>
@@ -224,22 +212,16 @@ const CreateJobForm = ({ onSuccess }: { onSuccess: () => void }) => {
               name="department"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs sm:text-sm">
-                    Department
-                  </FormLabel>
+                  <FormLabel>Department</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger className="text-xs sm:text-sm">
+                      <SelectTrigger>
                         <SelectValue placeholder="Select Department" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {departments.map((dep) => (
-                        <SelectItem
-                          key={dep}
-                          value={dep}
-                          className="text-xs sm:text-sm"
-                        >
+                        <SelectItem key={dep} value={dep}>
                           {dep}
                         </SelectItem>
                       ))}
@@ -254,20 +236,16 @@ const CreateJobForm = ({ onSuccess }: { onSuccess: () => void }) => {
               name="jobType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs sm:text-sm">Job Type</FormLabel>
+                  <FormLabel>Job Type</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger className="text-xs sm:text-sm">
+                      <SelectTrigger>
                         <SelectValue placeholder="Select Job Type" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {Object.keys(JOB_TYPE_MAP).map((key) => (
-                        <SelectItem
-                          key={key}
-                          value={key}
-                          className="text-xs sm:text-sm"
-                        >
+                        <SelectItem key={key} value={key}>
                           {JOB_TYPE_MAP[key as JobType]}
                         </SelectItem>
                       ))}
@@ -282,22 +260,16 @@ const CreateJobForm = ({ onSuccess }: { onSuccess: () => void }) => {
               name="experienceLevel"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs sm:text-sm">
-                    Experience Level
-                  </FormLabel>
+                  <FormLabel>Experience Level</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger className="text-xs sm:text-sm">
+                      <SelectTrigger>
                         <SelectValue placeholder="Select Experience Level" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {Object.keys(EXPERIENCE_LEVEL_MAP).map((key) => (
-                        <SelectItem
-                          key={key}
-                          value={key as ExperienceLevel}
-                          className="text-xs sm:text-sm"
-                        >
+                        <SelectItem key={key} value={key as ExperienceLevel}>
                           {EXPERIENCE_LEVEL_MAP[key as ExperienceLevel]}
                         </SelectItem>
                       ))}
@@ -312,22 +284,16 @@ const CreateJobForm = ({ onSuccess }: { onSuccess: () => void }) => {
               name="workArrangement"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs sm:text-sm">
-                    Work Arrangement
-                  </FormLabel>
+                  <FormLabel>Work Arrangement</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger className="text-xs sm:text-sm">
+                      <SelectTrigger>
                         <SelectValue placeholder="Select arrangement" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {Object.keys(WORK_ARRANGEMENT_MAP).map((key) => (
-                        <SelectItem
-                          key={key}
-                          value={key}
-                          className="text-xs sm:text-sm"
-                        >
+                        <SelectItem key={key} value={key}>
                           {WORK_ARRANGEMENT_MAP[key as WorkArrangement]}
                         </SelectItem>
                       ))}
@@ -343,11 +309,10 @@ const CreateJobForm = ({ onSuccess }: { onSuccess: () => void }) => {
             name="location"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs sm:text-sm">Location</FormLabel>
+                <FormLabel>Location</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="e.g., Makati City, Philippines"
-                    className="text-xs sm:text-sm"
                     {...field}
                   />
                 </FormControl>
@@ -355,20 +320,23 @@ const CreateJobForm = ({ onSuccess }: { onSuccess: () => void }) => {
               </FormItem>
             )}
           />
+        </FormSection>
+
+        <FormSection
+          title="Compensation & Schedule"
+          description="Specify salary range and work hours. This can be left blank."
+        >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="salaryMin"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs sm:text-sm">
-                    Minimum Salary (Optional)
-                  </FormLabel>
+                  <FormLabel>Minimum Salary (Optional)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       placeholder="e.g., 50000"
-                      className="text-xs sm:text-sm"
                       value={field.value ?? ""}
                       onChange={(e) => {
                         const val = e.target.value;
@@ -387,14 +355,11 @@ const CreateJobForm = ({ onSuccess }: { onSuccess: () => void }) => {
               name="salaryMax"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs sm:text-sm">
-                    Maximum Salary (Optional)
-                  </FormLabel>
+                  <FormLabel>Maximum Salary (Optional)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       placeholder="e.g., 80000"
-                      className="text-xs sm:text-sm"
                       value={field.value ?? ""}
                       onChange={(e) => {
                         const val = e.target.value;
@@ -414,60 +379,37 @@ const CreateJobForm = ({ onSuccess }: { onSuccess: () => void }) => {
             name="workSchedule"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs sm:text-sm">
-                  Work Schedule (Optional)
-                </FormLabel>
+                <FormLabel>Work Schedule (Optional)</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="e.g., Mon-Fri, 9am-6pm"
-                    className="text-xs sm:text-sm"
-                    {...field}
-                  />
+                  <Input placeholder="e.g., Mon-Fri, 9am-6pm" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+        </FormSection>
 
-          <FormField
-            control={form.control}
-            name="questions" // The name now matches our schema
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-xs sm:text-sm">
-                  Application Questions (Optional)
-                </FormLabel>
-                <FormControl>
-                  <SelectQuestion
-                    value={field.value ?? []}
-                    onChange={field.onChange}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="space-y-6">
-          {/* ... (all your other form fields: summary, skills, etc. remain the same) ... */}
+        <FormSection
+          title="Description & Requirements"
+          description="Flesh out the role. Use our AI assistant to generate content based on the job details."
+        >
           <FormField
             control={form.control}
             name="summary"
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between">
-                  <FormLabel className="text-xs sm:text-sm">Summary</FormLabel>
+                  <FormLabel>Summary</FormLabel>
                   <AiGenerateButton
                     onClick={handleGenerateSummary}
                     isLoading={isGenerating.summary}
+                    isDisabled={isSubmitting}
                   />
                 </div>
                 <FormControl>
                   <Textarea
                     placeholder="A brief summary of the role..."
-                    rows={6}
-                    className="text-xs sm:text-sm"
+                    rows={5}
                     {...field}
                   />
                 </FormControl>
@@ -475,30 +417,29 @@ const CreateJobForm = ({ onSuccess }: { onSuccess: () => void }) => {
               </FormItem>
             )}
           />
+
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs sm:text-sm font-medium">Skills</h3>
-            </div>
             <MultiValueInput
+              label="Skills"
               control={form.control}
               name="skills"
-              label=""
               placeholder="e.g., React, TypeScript"
               as="input"
             />
           </div>
+
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs sm:text-sm font-medium">Qualifications</h3>
               <AiGenerateButton
                 onClick={() => handleGenerateList("qualifications")}
                 isLoading={isGenerating.qualifications}
+                isDisabled={isSubmitting}
               />
             </div>
             <MultiValueInput
+              label="Qualifications"
               control={form.control}
               name="qualifications"
-              label=""
               placeholder="e.g., Bachelor's degree in Computer Science"
               as="textarea"
             />
@@ -510,18 +451,16 @@ const CreateJobForm = ({ onSuccess }: { onSuccess: () => void }) => {
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs sm:text-sm font-medium">
-                Responsibilities
-              </h3>
               <AiGenerateButton
                 onClick={() => handleGenerateList("responsibilities")}
                 isLoading={isGenerating.responsibilities}
+                isDisabled={isSubmitting}
               />
             </div>
             <MultiValueInput
+              label="Responsibilities"
               control={form.control}
               name="responsibilities"
-              label=""
               placeholder="e.g., Develop and maintain web applications"
               as="textarea"
             />
@@ -532,13 +471,10 @@ const CreateJobForm = ({ onSuccess }: { onSuccess: () => void }) => {
             )}
           </div>
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs sm:text-sm font-medium">Benefits</h3>
-            </div>
             <MultiValueInput
+              label="Benefits"
               control={form.control}
               name="benefits"
-              label=""
               placeholder="e.g., Health insurance, 20 days paid leave"
               as="input"
             />
@@ -548,50 +484,68 @@ const CreateJobForm = ({ onSuccess }: { onSuccess: () => void }) => {
               </FormMessage>
             )}
           </div>
-        </div>
+        </FormSection>
 
-        <div className="md:col-span-2">
-          <Separator className="my-6" />
-          <div className="flex items-center justify-end gap-4">
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem className="w-40">
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="text-xs sm:text-sm">
-                        <SelectValue placeholder="Set Status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {Object.keys(JOB_STATUS_MAP).map((key) => (
-                        <SelectItem
-                          key={key}
-                          value={key}
-                          className="text-xs sm:text-sm"
-                        >
-                          {JOB_STATUS_MAP[key as JobStatus]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button
-              type="submit"
-              disabled={disabled || Object.values(isGenerating).some(Boolean)}
-              className="text-xs sm:text-sm"
-            >
-              {disabled && <LoaderCircle className="animate-spin" />}
-              {disabled ? "Saving..." : "Create Job Posting"}
-            </Button>
-          </div>
+        <FormSection
+          title="Application Questions"
+          description="Add optional questions for applicants to answer when they apply."
+        >
+          <FormField
+            control={form.control}
+            name="questions"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <SelectQuestion
+                    value={field.value ?? []}
+                    onChange={field.onChange}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </FormSection>
+
+        <Separator />
+
+        <div className="flex items-center justify-end gap-4">
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem className="w-40">
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Set Status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {Object.keys(JOB_STATUS_MAP).map((key) => (
+                      <SelectItem key={key} value={key}>
+                        {JOB_STATUS_MAP[key as JobStatus]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button
+            type="submit"
+            disabled={disabled || Object.values(isGenerating).some(Boolean)}
+            className="w-40"
+          >
+            {disabled ? (
+              <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+            ) : null}
+            {disabled ? "Saving..." : "Create Job Posting"}
+          </Button>
         </div>
       </form>
     </Form>

@@ -1,26 +1,19 @@
 import { AppSidebar } from "@/components/App Sidebar/AppSidebar";
+import { MainContent } from "@/components/MainContent";
 import NextSessionProvider from "@/components/providers/NextSessionProvider";
-import { Card } from "@/components/ui/card";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Toaster } from "@/components/ui/sonner";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import React from "react";
 
 const CompanyLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <>
-      <NextSessionProvider>
-        <SidebarProvider>
+    <NextSessionProvider>
+      <SidebarProvider>
+        <div className="flex w-screen h-screen">
           <AppSidebar />
-          <main className="overflow-hidden w-screen  p-2  px-6">
-            <SidebarTrigger className="mb-2" />
-            <Card className="h-[95%] lg:h-[95%] lg:w-[98vw] shadow-2xl p-2">
-              {children}
-            </Card>
-            <Toaster />
-          </main>
-        </SidebarProvider>
-      </NextSessionProvider>
-    </>
+          <MainContent>{children}</MainContent>
+        </div>
+      </SidebarProvider>
+    </NextSessionProvider>
   );
 };
 

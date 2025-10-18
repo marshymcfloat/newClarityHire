@@ -4,6 +4,17 @@ import { Badge } from "@/components/ui/badge";
 import { Job, JobStatus } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
 import clsx from "clsx";
+import { Edit, Ellipsis, Trash } from "lucide-react";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import EditJobDialog from "./EditJobDialog";
 
 export const jobColumns: ColumnDef<Job>[] = [
   { accessorKey: "title", header: "Job Title" },
@@ -20,6 +31,7 @@ export const jobColumns: ColumnDef<Job>[] = [
       });
     },
   },
+
   {
     accessorKey: "status",
     header: "Status",
@@ -36,6 +48,29 @@ export const jobColumns: ColumnDef<Job>[] = [
         >
           {status.toLowerCase()}
         </Badge>
+      );
+    },
+  },
+  {
+    id: "actions",
+    header: "",
+    cell: ({ row }) => {
+      const job = row.original;
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <Ellipsis />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem>
+              <EditJobDialog job={job} />
+            </DropdownMenuItem>
+            <DropdownMenuItem className="">
+              <Trash color="red" /> <p className="text-red-600">Delete</p>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       );
     },
   },

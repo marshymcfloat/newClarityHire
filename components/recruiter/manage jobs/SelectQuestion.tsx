@@ -167,7 +167,6 @@ const SelectQuestion = ({ value, onChange }: SelectQuestionProps) => {
 
       <Separator className="my-4" />
 
-      {/* --- SECTION 2: AVAILABLE QUESTIONS (SIMPLIFIED) --- */}
       <div className="flex flex-col gap-2 max-h-60 overflow-y-auto pr-2">
         <h3 className="text-sm font-medium text-muted-foreground mb-2">
           Available Questions

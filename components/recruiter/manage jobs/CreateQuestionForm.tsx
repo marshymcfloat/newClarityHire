@@ -1,8 +1,18 @@
+// src/components/CreateQuestionForm.tsx
+
 "use client";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { QuestionTypeEnum } from "@prisma/client";
+import { LoaderCircle } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   Form,
   FormControl,
+  FormDescription, // ✨ NEW: Import FormDescription
   FormField,
   FormItem,
   FormLabel,
@@ -16,20 +26,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import MultiValueInput from "./MultiValueInput";
+
 import { QUESTION_TYPE_MAP } from "@/constants";
 import {
   createQuestionSchema,
   CreateQuestionValues,
 } from "@/lib/zod schemas/questionSchema";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { QuestionTypeEnum } from "@prisma/client";
-import { useForm } from "react-hook-form";
-import MultiValueInput from "./MultiValueInput";
-import { Button } from "@/components/ui/button";
-import { useMutation } from "@tanstack/react-query";
 import { createNewQuestionAction } from "@/lib/actions/questionActions";
-import { LoaderCircle } from "lucide-react";
-import { toast } from "sonner";
+
+const TYPES_WITH_OPTIONS: QuestionTypeEnum[] = ["MULTIPLE_CHOICE", "CHECKBOX"];
 
 const CreateQuestionForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const form = useForm<CreateQuestionValues>({
@@ -41,84 +48,108 @@ const CreateQuestionForm = ({ onSuccess }: { onSuccess: () => void }) => {
     },
   });
 
-  const typeInputWatch = form.watch("type");
+  const questionType = form.watch("type");
 
-  const { mutate, isPending } = useMutation({
+  const { mutate: createQuestion, isPending } = useMutation({
     mutationFn: createNewQuestionAction,
     onSuccess: (data) => {
-      if (!data.success) {
-        toast(data.error);
-        return;
+      if (data.success) {
+        toast.success(data.message || "Question created successfully!");
+        form.reset(); // ✨ UX: Reset form on success
+        onSuccess();
+      } else {
+        toast.error(data.error || "Something went wrong.");
       }
-      toast(data.message);
-      onSuccess();
+    },
+    onError: (error) => {
+      toast.error("Failed to create question. Please try again.");
+      console.error(error);
     },
   });
 
   const handleSubmission = (values: CreateQuestionValues) => {
-    mutate(values);
+    createQuestion(values);
   };
 
   return (
     <Form {...form}>
       <form
-        action=""
         onSubmit={form.handleSubmit(handleSubmission)}
-        className="space-y-4"
+        className="space-y-6 pt-4"
       >
         <FormField
           control={form.control}
           name="type"
           render={({ field }) => (
-            <Select onValueChange={field.onChange} value={field.value}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Question Type" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {Object.keys(QUESTION_TYPE_MAP).map((key) => (
-                  <SelectItem
-                    value={key}
-                    key={key}
-                    className="text-xs sm:text-sm"
-                  >
-                    {QUESTION_TYPE_MAP[key as QuestionTypeEnum]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="question"
-          render={({ field }) => (
             <FormItem>
-              <FormLabel>Question</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
+              <FormLabel>Question Type</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a question type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {(
+                    Object.entries(QUESTION_TYPE_MAP) as [
+                      QuestionTypeEnum,
+                      string
+                    ][]
+                  ).map(([key, value]) => (
+                    <SelectItem value={key} key={key}>
+                      {value}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {(typeInputWatch === "MULTIPLE_CHOICE" ||
-          typeInputWatch === "CHECKBOX") && (
+        <FormField
+          control={form.control}
+          name="question"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Question Text</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="e.g., How many years of experience do you have?"
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>
+                This is the question the candidate will see.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {TYPES_WITH_OPTIONS.includes(questionType) && (
           <MultiValueInput
             control={form.control}
-            label="Question Options"
             name="options"
-            as="input"
-            placeholder="React, NextJS, etc;."
+            label="Answer Options"
+            placeholder="Add an option and press Enter"
           />
         )}
 
-        <div className="flex justify-end">
-          <Button disabled={isPending}>
-            {isPending && <LoaderCircle className="animate-spin" />}
-            Create
+        <div className="flex justify-end pt-2">
+          <Button
+            type="submit"
+            disabled={isPending}
+            className="w-full sm:w-auto"
+          >
+            {isPending ? (
+              <>
+                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              "Create Question"
+            )}
           </Button>
         </div>
       </form>

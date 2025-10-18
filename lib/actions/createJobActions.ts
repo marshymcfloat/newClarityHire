@@ -204,3 +204,18 @@ export async function createJobAction(values: createJobActionPayload) {
     return { success: false, error: "There is an unexpected error occured" };
   }
 }
+
+export async function updateJobAction(payload: {
+  id: string; // The ID of the job to update
+  values: CreateJobValues;
+}) {
+  console.log("Updating job with ID:", payload.id);
+  console.log("With data:", payload.values);
+  // 1. Validate the payload with your schema
+  // 2. Find the job in the database using payload.id
+  // 3. Update the job with payload.values
+  // 4. Return a success or error message
+  // For now, let's simulate success:
+  await new Promise((res) => setTimeout(res, 1000));
+  return { success: true, message: "Job updated successfully!" };
+}

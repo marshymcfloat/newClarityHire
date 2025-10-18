@@ -1,8 +1,4 @@
-// lib/zod schemas/jobSchema.ts
-
 import { z } from "zod";
-
-// --- ENUMS (No changes here) ---
 
 export const ExperienceLevelEnum = z.enum([
   "INTERNSHIP",
@@ -24,8 +20,6 @@ export const JobTypeEnum = z.enum([
 ]);
 
 export const WorkArrangementEnum = z.enum(["ON_SITE", "HYBRID", "REMOTE"]);
-
-// --- SCHEMA ---
 
 export const createJobSchema = z
   .object({
@@ -53,8 +47,6 @@ export const createJobSchema = z
     skills: z.array(z.string()).optional(),
     workSchedule: z.string().optional(),
 
-    // --- CHANGE HERE ---
-    // Renamed from `questionIds` and updated the schema to match our component's output.
     questions: z
       .array(
         z.object({

@@ -1,13 +1,14 @@
-// components/MultiValueInput.tsx
+// src/components/MultiValueInput.tsx
+
 "use client";
 
 import { useState } from "react";
 import type { Control, FieldValues, Path } from "react-hook-form";
 import { X } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
+  FormDescription, // ✨ NEW: Import FormDescription
   FormField,
   FormItem,
   FormLabel,
@@ -22,6 +23,7 @@ type MultiValueInputProps<T extends FieldValues> = {
   label: string;
   placeholder?: string;
   as?: "input" | "textarea";
+  description?: string; // ✨ NEW: Add an optional description prop
 };
 
 const MultiValueInput = <T extends FieldValues>({
@@ -30,6 +32,7 @@ const MultiValueInput = <T extends FieldValues>({
   label,
   placeholder,
   as = "input",
+  description, // ✨ NEW
 }: MultiValueInputProps<T>) => {
   const [inputValue, setInputValue] = useState("");
   const InputComponent = as === "textarea" ? Textarea : Input;
@@ -69,13 +72,19 @@ const MultiValueInput = <T extends FieldValues>({
 
         return (
           <FormItem>
-            <FormLabel className="text-xs sm:text-sm">{label}</FormLabel>
+            {label && <FormLabel>{label}</FormLabel>}
 
-            <div className="flex flex-wrap gap-2 rounded-md border p-2 min-h-[46px]">
+            {/* Render the list of items */}
+            <div className="flex flex-wrap gap-2 rounded-md border p-2 min-h-[46px] bg-background">
+              {items.length === 0 && (
+                <span className="text-sm text-muted-foreground px-2 py-1">
+                  No items added yet.
+                </span>
+              )}
               {items.map((item) => (
                 <div
                   key={item}
-                  className="flex items-center gap-2 px-2 py-1 text-xs sm:text-sm bg-secondary text-secondary-foreground rounded-md"
+                  className="flex items-center gap-2 px-2 py-1 text-sm bg-secondary text-secondary-foreground rounded-md"
                 >
                   <span
                     className="break-all cursor-pointer hover:opacity-80"
@@ -103,19 +112,20 @@ const MultiValueInput = <T extends FieldValues>({
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder={placeholder || "Type a value and click Add"}
-                  className="flex-1 text-xs sm:text-sm"
-                  rows={as === "textarea" ? 4 : undefined}
+                  className="flex-1"
+                  rows={as === "textarea" ? 3 : undefined}
                 />
                 <Button
                   type="button"
                   onClick={handleAddItem}
                   disabled={!inputValue.trim()}
-                  className="w-full sm:w-auto text-xs sm:text-sm"
+                  className="w-full sm:w-auto"
                 >
                   {items.includes(inputValue.trim()) ? "Update" : "Add"}
                 </Button>
               </div>
             </FormControl>
+            {description && <FormDescription>{description}</FormDescription>}
             <FormMessage />
           </FormItem>
         );
