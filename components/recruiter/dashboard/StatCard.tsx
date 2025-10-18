@@ -7,12 +7,15 @@ import {
 } from "@/components/ui/card";
 import React from "react";
 
+// trigger redeploy
 const StatCard = ({
   title,
   description,
+  data,
 }: {
   title: string;
   description?: string;
+  data: number;
 }) => {
   return (
     <Card className="max-w-[400px]">
